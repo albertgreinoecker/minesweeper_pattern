@@ -1,4 +1,4 @@
-# minesweeper_pattern
+## Minesweeper pattern
 
 This project should show the application of design pattern in a simple game 
 
