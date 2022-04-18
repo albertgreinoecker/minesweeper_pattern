@@ -3,6 +3,8 @@ package org.htlinn.pattern.minesweeper.model;
 import java.util.Arrays;
 import java.util.Observable;
 
+import org.htlinn.pattern.minesweeper.model.strategy.PlayStrategy;
+
 public class Playground extends Observable {
 	public enum ACTIONS {
 		CLICK, FLAG
@@ -12,13 +14,28 @@ public class Playground extends Observable {
 	private int width;
 	private int height;
 	private int bombs;
+	private PlayStrategy strat;
 
-	public Playground(int width, int height, int bombs) {
+	private static Playground instance; // Singleton
+
+	private Playground() {
+
+	}
+
+	private Playground(int width, int height, int bombs, PlayStrategy strat) {
 		matrix = new Field[height][width];
 		this.width = width;
 		this.height = height;
 		this.bombs = bombs;
+		this.strat = strat;
 		init();
+	}
+
+	public static Playground instance(int width, int height, int bombs, PlayStrategy strat) {
+		if (instance == null) {
+			instance = new Playground(width, height, bombs, strat);
+		}
+		return instance;
 	}
 
 	public void init() {
@@ -103,16 +120,14 @@ public class Playground extends Observable {
 		}
 	}
 
+	public Field get(int x, int y) {
+		return matrix[x][y];
+	}
+
 	public boolean set(int x, int y) {
-		matrix[y][x].setOpen(true);
 		setChanged();
-		notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.CELL_SET, x, y,
-				matrix[y][x] instanceof EmptyField ? ((EmptyField) matrix[y][x]).getBombsCnt() : -1));
-		if (matrix[y][x] instanceof BombField) {
-			return false;
-		}
-		openNeighbour(x, y);
-		return true;
+		return strat.set(this, x, y);
+
 	}
 
 	public void play(int width, int height, ACTIONS action) {

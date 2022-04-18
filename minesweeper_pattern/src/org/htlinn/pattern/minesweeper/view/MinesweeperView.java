@@ -6,6 +6,7 @@ import java.util.Observer;
 import org.htlinn.pattern.minesweeper.control.MinesweeperControl;
 import org.htlinn.pattern.minesweeper.model.MinesweeperMessage;
 import org.htlinn.pattern.minesweeper.model.Playground;
+import org.htlinn.pattern.minesweeper.model.strategy.NormalStrategy;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -151,7 +152,8 @@ public class MinesweeperView extends Application implements Observer {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Playground model = new Playground(15, 15, 30);
+		NormalStrategy strategy = new NormalStrategy();
+		Playground model = Playground.instance(15, 15, 30, strategy);
 		model.toStringA();
 		MinesweeperControl control = new MinesweeperControl(model);
 		MinesweeperView view = new MinesweeperView(model, control);
