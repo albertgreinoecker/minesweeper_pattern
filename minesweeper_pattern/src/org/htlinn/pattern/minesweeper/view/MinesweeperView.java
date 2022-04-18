@@ -140,9 +140,9 @@ public class MinesweeperView extends Application implements Observer {
 
 	public Node getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
 		Node result = null;
-		ObservableList<Node> childrens = gridPane.getChildren();
+		ObservableList<Node> children = gridPane.getChildren();
 
-		for (Node node : childrens) {
+		for (Node node : children) {
 			if (GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column) {
 				result = node;
 				break;
