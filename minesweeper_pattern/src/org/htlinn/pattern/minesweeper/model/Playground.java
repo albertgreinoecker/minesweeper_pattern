@@ -191,4 +191,22 @@ public class Playground extends Observable {
 		}
 
 	}
+	
+	public Field[][] getMatrixDeepCopy()
+	{
+		Field[][] f = new Field[height][width];
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				f[i][j] = matrix[i][j];
+			}
+		}
+		return f;
+	}
+
+	public void setMatrix(Field[][] matrix) {
+		this.matrix = matrix;
+	}
+	
+	
+	
 }

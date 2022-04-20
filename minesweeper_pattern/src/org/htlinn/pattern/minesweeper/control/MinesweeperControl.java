@@ -1,6 +1,8 @@
 package org.htlinn.pattern.minesweeper.control;
 
 import org.htlinn.pattern.minesweeper.model.Playground;
+import org.htlinn.pattern.minesweeper.model.command.CommandRecorder;
+import org.htlinn.pattern.minesweeper.model.command.FlagCommand;
 
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -12,9 +14,11 @@ import javafx.scene.input.MouseEvent;
  */
 public class MinesweeperControl implements EventHandler<MouseEvent> {
 	private Playground field;
-
+	private CommandRecorder recorder;
+	
 	public MinesweeperControl(Playground field) {
 		this.field = field;
+		this.recorder = CommandRecorder.instance();
 	}
 
 	@Override
@@ -27,7 +31,9 @@ public class MinesweeperControl implements EventHandler<MouseEvent> {
 		if (event.getButton() == MouseButton.PRIMARY) {
 			field.play(x, y, Playground.ACTIONS.CLICK);
 		} else if (event.getButton() == MouseButton.SECONDARY) {
-			field.play(x, y, Playground.ACTIONS.FLAG);
+			//field.play(x, y, Playground.ACTIONS.FLAG);
+			FlagCommand c = new FlagCommand(field, x, y);
+			recorder.doIt(c);
 		}
 
 	}
