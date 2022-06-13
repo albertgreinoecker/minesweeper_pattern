@@ -38,6 +38,13 @@ public class Playground extends Observable {
 		return instance;
 	}
 
+	public static Playground instance() {
+		if (instance == null) {
+			instance = new Playground();
+		}
+		return instance;
+	}
+	
 	public void init() {
 		for (Field[] row : matrix) {
 			Arrays.fill(row, new EmptyField());
@@ -85,7 +92,6 @@ public class Playground extends Observable {
 				}
 			}
 		}
-
 	}
 
 	private int cntNeighbourBombs(int x, int y) {
@@ -126,26 +132,15 @@ public class Playground extends Observable {
 
 	public boolean set(int x, int y) {
 		setChanged();
-		return strat.set(this, x, y);
-
-	}
-
-	public void play(int width, int height, ACTIONS action) {
-		boolean ok = true;
-		if (action.equals(ACTIONS.CLICK)) {
-			ok = set(width, height);
-		} else if (action.equals(ACTIONS.FLAG)) {
-			flagging(width, height);
-		}
-
+		boolean ok = strat.set(this, x, y);
 		if (won()) {
 			setChanged();
 			notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.WON));
 		} else if (!ok) {
 			setChanged();
-			notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.LOST, width, height));
+			notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.LOST, x, y));
 		}
-
+		return ok;
 	}
 
 	public boolean won() {
@@ -175,7 +170,7 @@ public class Playground extends Observable {
 	}
 
 	public int getWidth() {
-		return width;
+		return this.width;
 	}
 
 	public void setWidth(int width) {
@@ -192,12 +187,27 @@ public class Playground extends Observable {
 
 	}
 	
-	public Field[][] getMatrixDeepCopy()
-	{
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Field[] f : matrix) {
+			for (Field a : f) {
+				sb.append(a);
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+
+	public Field[][] getMatrixDeepCopy() {
 		Field[][] f = new Field[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				f[i][j] = matrix[i][j];
+				if (matrix[i][j] instanceof BombField)
+					f[i][j] = new BombField((BombField) matrix[i][j]);
+				else {
+					f[i][j] = new EmptyField((EmptyField) matrix[i][j]);
+				}
 			}
 		}
 		return f;
@@ -205,8 +215,26 @@ public class Playground extends Observable {
 
 	public void setMatrix(Field[][] matrix) {
 		this.matrix = matrix;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				setChanged();
+				if (matrix[i][j].isFlag()) {
+					notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.FLAG_ON, j, i));
+				} else {
+					notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.FLAG_OFF, j, i));
+				}
+
+				if (matrix[i][j] instanceof EmptyField) {
+					setChanged();
+					if (matrix[i][j].isOpen()) {
+						notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.CELL_SET, j, i,
+								((EmptyField) matrix[i][j]).getBombsCnt()));
+					} else {
+						notifyObservers(new MinesweeperMessage(MinesweeperMessage.ACTIONS.CELL_UNSET, j, i,
+								((EmptyField) matrix[i][j]).getBombsCnt()));
+					}
+				}
+			}
+		}
 	}
-	
-	
-	
 }
