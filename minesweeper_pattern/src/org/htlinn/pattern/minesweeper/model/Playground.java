@@ -21,16 +21,11 @@ public class Playground extends Observable {
 	private Playground() {
 
 	}
-
-	private Playground(int width, int height, int bombs, PlayStrategy strat) {
-		
-	}
-
 	
 	
 	public static Playground instance(int width, int height, int bombs, PlayStrategy strat) {
 		if (instance == null) {
-			instance = new Playground(width, height, bombs, strat);
+			instance = new Playground();
 		}
 		return instance;
 	}
