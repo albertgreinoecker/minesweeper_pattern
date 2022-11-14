@@ -2,7 +2,7 @@ package org.htlinn.pattern.minesweeper.model;
 
 public class MinesweeperMessage {
 	public enum ACTIONS {
-		NOTIFY, CELL_SET, LOST, WON, FIELD_FULL, FLAG_ON, FLAG_OFF
+		NOTIFY, CELL_SET,CELL_UNSET,  LOST, WON, FIELD_FULL, FLAG_ON, FLAG_OFF
 	};
 
 	ACTIONS action;

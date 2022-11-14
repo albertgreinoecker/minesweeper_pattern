@@ -1,16 +1,23 @@
 package org.htlinn.pattern.minesweeper.view;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.htlinn.pattern.minesweeper.control.MinesweeperControl;
+import org.htlinn.pattern.minesweeper.control.UndoRedoControl;
 import org.htlinn.pattern.minesweeper.model.MinesweeperMessage;
 import org.htlinn.pattern.minesweeper.model.Playground;
+import org.htlinn.pattern.minesweeper.model.command.CommandRecorder;
+import org.htlinn.pattern.minesweeper.model.factory.FieldSerializer;
 import org.htlinn.pattern.minesweeper.model.strategy.NormalStrategy;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -21,19 +28,23 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class MinesweeperView extends Application implements Observer {
 	private Playground model;
 	private MinesweeperControl control;
+	private UndoRedoControl urControl;
 	private GridPane feld = new GridPane();
 
 	private String IMG_HIDDEN = "images/circle_transparent.png";
 	private String IMG_FLAG = "images/flag.png";
 	private String IMG_BOMB = "images/bomb.png";
 
-	public MinesweeperView(Playground model, MinesweeperControl control) {
+	public MinesweeperView(Playground model, MinesweeperControl control, UndoRedoControl urControl) {
 		this.model = model;
+		this.urControl = urControl;
 		this.control = control;
 	}
 
@@ -49,6 +60,7 @@ public class MinesweeperView extends Application implements Observer {
 		model.init();
 		feld.getChildren().clear();
 		fillGrid();
+		CommandRecorder.instance().reset();
 	}
 
 	private void fillGrid() {
@@ -82,20 +94,63 @@ public class MinesweeperView extends Application implements Observer {
 		primaryStage.setOnCloseRequest(event -> {
 			l.close();
 		});
+
+		HBox top = new HBox();
+		Button undo = new Button("UNDO");
+		undo.setId("UNDO");
+		undo.setOnAction(urControl);
+		Button redo = new Button("REDO");
+		redo.setOnAction(urControl);
+		redo.setId("REDO");
+		
+		Button load = new Button("Load");
+		load.setOnAction((ActionEvent e) -> {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Bitte die Datei auswaehlen...");
+			File f = fileChooser.showOpenDialog(primaryStage);
+			if (f == null) return;
+			try {
+				FieldSerializer.load(f, model);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		});
+		Button save = new Button("Save");
+		save.setOnAction((ActionEvent e) -> {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Bitte die Datei auswaehlen...");
+			File f = fileChooser.showSaveDialog(primaryStage);
+			if (f == null) return;
+			try {
+				FieldSerializer.save(f, model);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		});
+		top.getChildren().addAll(undo, redo, load, save);
+		
+
+		
+		root.setTop(top);
+
 	}
 
 	@Override
 	public void update(Observable obs, Object message) {
 		MinesweeperMessage msg = (MinesweeperMessage) message;
+		System.out.println(msg);
 		Button b = (Button) (getNodeByRowColumnIndex(msg.getY(), msg.getX(), feld));
+		b.setDisable(false);
 		if (msg.getAction().equals(MinesweeperMessage.ACTIONS.CELL_SET)) {
 			b = (Button) (getNodeByRowColumnIndex(msg.getY(), msg.getX(), feld));
 			b.setGraphic(null);
 			b.setText(Integer.toString(msg.getNeighbourBombs()));
+			
 			switch (msg.getNeighbourBombs()) {
 			case 0:
 				b.setDisable(true);
 				b.setText("");
+				b.setStyle("-fx-background-radius: 10");
 				break;
 			case 1:
 				b.setStyle("-fx-background-color: #f4f4f8");
@@ -127,6 +182,10 @@ public class MinesweeperView extends Application implements Observer {
 			setImg(b, IMG_FLAG);
 		} else if (msg.getAction().equals(MinesweeperMessage.ACTIONS.FLAG_OFF)) {
 			setImg(b, IMG_HIDDEN);
+		} else if (msg.getAction().equals(MinesweeperMessage.ACTIONS.CELL_UNSET)) {
+			b.setStyle("-fx-background-radius: 10");
+			setImg(b, IMG_HIDDEN);
+			b.setText("");
 		} else if (msg.getAction().equals(MinesweeperMessage.ACTIONS.WON)) {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Minesweeper");
@@ -153,10 +212,12 @@ public class MinesweeperView extends Application implements Observer {
 
 	public static void main(String[] args) throws Exception {
 		NormalStrategy strategy = new NormalStrategy();
-		Playground model = Playground.instance(15, 15, 30, strategy);
+		Playground model = Playground.instance();
+		model.init(15, 15, 30, strategy);
 		model.toStringA();
 		MinesweeperControl control = new MinesweeperControl(model);
-		MinesweeperView view = new MinesweeperView(model, control);
+		UndoRedoControl urControl = new UndoRedoControl();
+		MinesweeperView view = new MinesweeperView(model, control, urControl);
 		Platform.runLater(() -> {
 			try {
 				view.start(new Stage());

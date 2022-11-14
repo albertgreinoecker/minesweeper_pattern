@@ -4,6 +4,21 @@ public abstract class Field {
 	protected boolean flag;
 	protected boolean open;
 
+	public Field() {
+		this.flag = false;
+		this.open = false;
+	}
+
+	public Field(boolean open)
+	{
+		this.open = open;
+	}
+	
+	public Field(Field f) {
+		this.flag = f.isFlag();
+		this.open = f.isOpen();
+	}
+
 	public boolean isFlag() {
 		return flag;
 	}

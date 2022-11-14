@@ -23,14 +23,11 @@ public class Playground extends Observable {
 	}
 
 	private Playground(int width, int height, int bombs, PlayStrategy strat) {
-		matrix = new Field[height][width];
-		this.width = width;
-		this.height = height;
-		this.bombs = bombs;
-		this.strat = strat;
-		init();
+		
 	}
 
+	
+	
 	public static Playground instance(int width, int height, int bombs, PlayStrategy strat) {
 		if (instance == null) {
 			instance = new Playground(width, height, bombs, strat);
@@ -43,6 +40,16 @@ public class Playground extends Observable {
 			instance = new Playground();
 		}
 		return instance;
+	}
+	
+	public void init(int width, int height, int bombs, PlayStrategy strat)
+	{
+		matrix = new Field[height][width];
+		this.width = width;
+		this.height = height;
+		this.bombs = bombs;
+		this.strat = strat;
+		init();	
 	}
 	
 	public void init() {

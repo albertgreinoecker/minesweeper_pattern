@@ -2,11 +2,11 @@ package org.htlinn.pattern.minesweeper.control;
 
 import org.htlinn.pattern.minesweeper.model.command.CommandRecorder;
 
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
 
-public class UndoRedoControl implements EventHandler<MouseEvent> {
+public class UndoRedoControl implements EventHandler<ActionEvent> {
 
 	private CommandRecorder recorder;
 
@@ -15,8 +15,8 @@ public class UndoRedoControl implements EventHandler<MouseEvent> {
 	}
 
 	@Override
-	public void handle(MouseEvent ev) {
-		if (((Node) ev.getSource()).getId().equals("UNDO")) {
+	public void handle(ActionEvent event) {
+		if (((Node) event.getSource()).getId().equals("UNDO")) {
 			System.out.println("UNDO");
 			recorder.undo();
 		} else {
